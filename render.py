@@ -6,8 +6,8 @@ from telegram import Bot
 from telegram.error import TelegramError
 
 # Telegram Bot Setup
-TELEGRAM_TOKEN = 'YOUR_BOT_TOKEN'  # Replace with your bot token
-CHAT_ID = 'YOUR_CHAT_ID'  # Replace with your chat ID
+TELEGRAM_TOKEN = '7433576884:AAFvpFgu482Q1XmhatNKMuRCW6YYOQ_L4C4'  # Replace with your bot token
+CHAT_ID = '2024606424'  # Replace with your chat ID
 bot = Bot(token=TELEGRAM_TOKEN)
 
 # Function to send messages via Telegram bot (asynchronous)
