@@ -4,12 +4,12 @@ import csv
 import os
 import logging
 import requests
+import chromedriver_autoinstaller
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException, NoSuchWindowException
 from selenium.webdriver.support import expected_conditions as EC
-import chromedriver_autoinstaller
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException
 
 # Configure logging (stdout will be captured by Render logs)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -20,15 +20,17 @@ telegram_chat_id = os.getenv("TELEGRAM_CHAT_ID")
 phone_number = os.getenv("PHONE_NUMBER")
 password = os.getenv("PASSWORD")
 
-# Install ChromeDriver if not installed or if the installed version is wrong
+# Automatically download and install the correct version of ChromeDriver
 chromedriver_autoinstaller.install()
 
-# Initialize WebDriver (headless mode for Render)
+# Set up headless Chrome options for Render
 options = webdriver.ChromeOptions()
 options.add_argument('--headless')  # Run in headless mode
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--disable-gpu')  # To handle GPU issues in headless mode
+options.add_argument('--disable-gpu')  # If needed, for GPU issues
+
+# Initialize WebDriver (headless mode for Render)
 driver = None
 hourly_multipliers = []  # Define hourly_multipliers globally
 
@@ -106,6 +108,7 @@ def navigate_to_aviator(driver):
 
     except Exception as e:
         handle_error(f"Error navigating to Aviator: {e}")
+        # Handle error, possibly return to home page or retry
 
 # Function to return to home page of BetPawa
 def return_to_home_page():
