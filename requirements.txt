@@ -1,4 +1,8 @@
 python-telegram-bot
 logging
 requests==2.31.0
+<<<<<<< HEAD
 selenium
+=======
+selenium
+>>>>>>> 0315749a505ed9c6f6ba445f91721966a52fd63e
