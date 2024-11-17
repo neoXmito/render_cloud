@@ -15,8 +15,8 @@ from selenium.webdriver.chrome.options import Options
 logging.basicConfig(filename='aviator_script.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Telegram configuration
-telegram_bot_token = "7433576884:AAFvpFgu482Q1XmhatNKMuRCW6YYOQ_L4C4"
-telegram_chat_id = "2024606424"
+telegram_bot_token = "YOUR_TELEGRAM_BOT_TOKEN"  # Replace with your bot token
+telegram_chat_id = "YOUR_TELEGRAM_CHAT_ID"      # Replace with your chat ID
 
 # ChromeDriver setup
 chrome_options = Options()
@@ -28,8 +28,8 @@ chrome_options.add_argument('--disable-dev-shm-usage')  # Fixes some issues in h
 webdriver_path = "/usr/local/bin/chromedriver"  # This is an example for Render
 os.environ["PATH"] += os.pathsep + webdriver_path
 
-bwalya = '975779902'
-bwalya_pw = 'chalison'
+bwalya = 'YOUR_PHONE_NUMBER'
+bwalya_pw = 'YOUR_PASSWORD'
 phone_number = bwalya
 password = bwalya_pw
 
@@ -41,7 +41,6 @@ hourly_multipliers = []
 def initialize_driver():
     global driver
     driver = webdriver.Chrome(options=chrome_options)
-    send_telegram_message("driver has been initialised")
 
 # Function to send Telegram message
 def send_telegram_message(message):
@@ -50,6 +49,16 @@ def send_telegram_message(message):
     response = requests.post(url, data=data)
     if response.status_code != 200:
         logging.error(f"Failed to send Telegram message: {response.text}")
+
+# Function to send screenshot via Telegram
+def send_screenshot_via_telegram(image_path):
+    url = f"https://api.telegram.org/bot{telegram_bot_token}/sendPhoto"
+    with open(image_path, 'rb') as image_file:
+        files = {'photo': image_file}
+        data = {"chat_id": telegram_chat_id}
+        response = requests.post(url, files=files, data=data)
+        if response.status_code != 200:
+            logging.error(f"Failed to send screenshot via Telegram: {response.text}")
 
 # Function to log error and notify
 def handle_error(message, exc_info=True):
@@ -95,11 +104,9 @@ def login(driver):
         time.sleep(2)
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-test-id="logInButton"]'))).click()
         time.sleep(2)
-        send_telegram_message("successfully logged in ")
     except Exception as e:
         handle_error(f"Error during login: {e}")
         return_to_home_page()
-
 
 def navigate_to_aviator(driver):
     try:
@@ -111,11 +118,13 @@ def navigate_to_aviator(driver):
             EC.element_to_be_clickable((By.XPATH, "//div[@class='card-item-text' and contains(text(), 'Aviator')]"))
         )
         aviator_link.click()
-        send_telegram_message("successfully navigated to aviator")
 
     except Exception as e:
         handle_error(f"Error navigating to Aviator: {e}")
-        # Handle error, possibly return to home page or retry
+        # Capture screenshot on error
+        screenshot_path = 'error_screenshot.png'
+        driver.save_screenshot(screenshot_path)
+        send_screenshot_via_telegram(screenshot_path)
 
 # Function to return to home page of BetPawa
 def return_to_home_page():
@@ -146,15 +155,21 @@ def main():
         navigate_to_aviator(driver)
         
         start_hour = datetime.datetime.now().hour
-        start_hour2=start_hour
+        start_hour2 = start_hour
+        time.sleep(5)
+        # Capture screenshot on timeout
+        screenshot_path = 'error_screenshot.png'
+        driver.save_screenshot(screenshot_path)
+        send_screenshot_via_telegram(screenshot_path)
         while True:
             try:
                 first_multiplier_div = WebDriverWait(driver, 30).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, 'div.payouts-block app-bubble-multiplier.payout:first-child div.bubble-multiplier'))
                 )
                 current_value = float(first_multiplier_div.text.strip()[:-1])
-                msg=str(current_value)
+                msg = str(current_value)
                 send_telegram_message(msg)
+                
                 if len(hourly_multipliers) == 0:
                     hourly_multipliers.append(current_value)
                     print(f"New multiplier detected: {current_value}")
@@ -176,6 +191,12 @@ def main():
             
             except TimeoutException:
                 handle_error("TimeoutException occurred, returning to home page then refreshing page.")
+                
+                # Capture screenshot on timeout
+                screenshot_path = 'error_screenshot.png'
+                driver.save_screenshot(screenshot_path)
+                send_screenshot_via_telegram(screenshot_path)
+                
                 return_to_home_page()
                 navigate_to_aviator(driver)
             except NoSuchElementException as e:
