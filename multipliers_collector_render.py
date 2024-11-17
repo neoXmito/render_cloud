@@ -4,12 +4,14 @@ import csv
 import os
 import logging
 import requests
-import chromedriver_autoinstaller
+import shutil
+import subprocess
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException, NoSuchWindowException
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException
+import chromedriver_autoinstaller
 
 # Configure logging (stdout will be captured by Render logs)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -20,17 +22,34 @@ telegram_chat_id = os.getenv("TELEGRAM_CHAT_ID")
 phone_number = os.getenv("PHONE_NUMBER")
 password = os.getenv("PASSWORD")
 
+# Function to install Chrome in the Render environment
+def install_chrome():
+    try:
+        # Update apt package list
+        subprocess.run(['apt-get', 'update'], check=True)
+        # Install required dependencies
+        subprocess.run(['apt-get', 'install', '-y', 'wget', 'curl', 'gnupg', 'fonts-liberation', 'libappindicator3-1', 'libasound2', 'libatk-bridge2.0-0', 'libatk1.0-0', 'libcups2', 'libdbus-1-3', 'libgdk-pixbuf2.0-0', 'libnspr4', 'libnss3', 'libx11-xcb1', 'libxcomposite1', 'libxdamage1', 'libxrandr2'], check=True)
+        # Download and install Google Chrome
+        subprocess.run(['wget', 'https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb', '-O', '/tmp/google-chrome.deb'], check=True)
+        subprocess.run(['dpkg', '-i', '/tmp/google-chrome.deb'], check=True)
+        subprocess.run(['apt-get', 'install', '-f'], check=True)  # Fix missing dependencies
+        logging.info("Google Chrome installed successfully.")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error installing Google Chrome: {e}")
+        raise
+
+# Install Chrome if it's not already installed
+if not shutil.which('google-chrome-stable'):
+    install_chrome()
+
 # Automatically download and install the correct version of ChromeDriver
 chromedriver_autoinstaller.install()
 
-# Set up headless Chrome options for Render
+# Initialize WebDriver (headless mode for Render)
 options = webdriver.ChromeOptions()
 options.add_argument('--headless')  # Run in headless mode
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--disable-gpu')  # If needed, for GPU issues
-
-# Initialize WebDriver (headless mode for Render)
 driver = None
 hourly_multipliers = []  # Define hourly_multipliers globally
 
