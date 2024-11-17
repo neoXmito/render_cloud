@@ -51,6 +51,16 @@ def send_telegram_message(message):
     if response.status_code != 200:
         logging.error(f"Failed to send Telegram message: {response.text}")
 
+# Function to send screenshot via Telegram
+def send_screenshot_via_telegram(image_path):
+    url = f"https://api.telegram.org/bot{telegram_bot_token}/sendPhoto"
+    with open(image_path, 'rb') as image_file:
+        files = {'photo': image_file}
+        data = {"chat_id": telegram_chat_id}
+        response = requests.post(url, files=files, data=data)
+        if response.status_code != 200:
+            logging.error(f"Failed to send screenshot via Telegram: {response.text}")
+
 # Function to log error and notify
 def handle_error(message, exc_info=True):
     logging.error(message, exc_info=exc_info)
@@ -149,6 +159,11 @@ def main():
         start_hour2=start_hour
         while True:
             try:
+                # Capture screenshot on timeout
+                screenshot_path = 'error_screenshot.png'
+                driver.save_screenshot(screenshot_path)
+                send_screenshot_via_telegram(screenshot_path)
+                
                 first_multiplier_div = WebDriverWait(driver, 30).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, 'div.payouts-block app-bubble-multiplier.payout:first-child div.bubble-multiplier'))
                 )
