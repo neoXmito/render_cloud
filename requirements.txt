@@ -1,2 +1,7 @@
-selenium
-python-telegram-bot
+datetime
+time
+csv
+os
+logging
+requests==2.31.0
+selenium==4.10.0
