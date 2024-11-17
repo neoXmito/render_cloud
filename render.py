@@ -1,4 +1,5 @@
 import time
+import asyncio
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from telegram import Bot
@@ -9,10 +10,10 @@ TELEGRAM_TOKEN = 'YOUR_BOT_TOKEN'  # Replace with your bot token
 CHAT_ID = 'YOUR_CHAT_ID'  # Replace with your chat ID
 bot = Bot(token=TELEGRAM_TOKEN)
 
-# Function to send messages via Telegram bot
-def send_telegram_message(message):
+# Function to send messages via Telegram bot (asynchronous)
+async def send_telegram_message(message):
     try:
-        bot.send_message(chat_id=CHAT_ID, text=message)
+        await bot.send_message(chat_id=CHAT_ID, text=message)
     except TelegramError as e:
         print(f"Error sending message: {e}")
 
@@ -27,19 +28,24 @@ chrome_options.add_argument('--remote-debugging-port=9222')  # Optional: Enable 
 driver = webdriver.Chrome(options=chrome_options)
 
 # Start the script
-send_telegram_message("Script has started!")
+async def main():
+    await send_telegram_message("Script has started!")
 
-try:
-    # Access the website betpawa.co.zm
-    driver.get("https://betpawa.co.zm")
-    time.sleep(3)  # Wait for the page to load
+    try:
+        # Access the website betpawa.co.zm
+        driver.get("https://betpawa.co.zm")
+        time.sleep(3)  # Wait for the page to load
 
-    # Notify that the website has been accessed
-    send_telegram_message("Successfully accessed the website betpawa.co.zm!")
+        # Notify that the website has been accessed
+        await send_telegram_message("Successfully accessed the website betpawa.co.zm!")
 
-except Exception as e:
-    send_telegram_message(f"Error occurred: {e}")
+    except Exception as e:
+        await send_telegram_message(f"Error occurred: {e}")
 
-finally:
-    # Close the WebDriver after completing the task
-    driver.quit()
+    finally:
+        # Close the WebDriver after completing the task
+        driver.quit()
+
+# Run the async main function
+if __name__ == "__main__":
+    asyncio.run(main())
