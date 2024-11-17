@@ -159,12 +159,13 @@ def main():
         start_hour2=start_hour
         while True:
             try:
+                time.sleep(60)
                 # Capture screenshot on timeout
                 screenshot_path = 'error_screenshot.png'
                 driver.save_screenshot(screenshot_path)
                 send_screenshot_via_telegram(screenshot_path)
                 
-                first_multiplier_div = WebDriverWait(driver, 30).until(
+                first_multiplier_div = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, 'div.payouts-block app-bubble-multiplier.payout:first-child div.bubble-multiplier'))
                 )
                 current_value = float(first_multiplier_div.text.strip()[:-1])
