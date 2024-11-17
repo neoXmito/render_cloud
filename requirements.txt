@@ -1,5 +1,4 @@
-csv
-os
+python-telegram-bot
 logging
 requests==2.31.0
-selenium==4.10.0
+selenium

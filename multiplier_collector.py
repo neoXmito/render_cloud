@@ -41,6 +41,7 @@ hourly_multipliers = []
 def initialize_driver():
     global driver
     driver = webdriver.Chrome(options=chrome_options)
+    send_telegram_message("driver has been initialised")
 
 # Function to send Telegram message
 def send_telegram_message(message):
@@ -94,6 +95,7 @@ def login(driver):
         time.sleep(2)
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-test-id="logInButton"]'))).click()
         time.sleep(2)
+        send_telegram_message("successfully logged in ")
     except Exception as e:
         handle_error(f"Error during login: {e}")
         return_to_home_page()
@@ -109,6 +111,7 @@ def navigate_to_aviator(driver):
             EC.element_to_be_clickable((By.XPATH, "//div[@class='card-item-text' and contains(text(), 'Aviator')]"))
         )
         aviator_link.click()
+        send_telegram_message("successfully navigated to aviator")
 
     except Exception as e:
         handle_error(f"Error navigating to Aviator: {e}")
